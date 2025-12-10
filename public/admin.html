@@ -74,6 +74,77 @@
     </div>
   </div>
 
+  <!-- Edit Poll Modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal" style="max-width: 520px; padding: 32px;">
+      <div class="modal-header" style="margin-bottom: 24px;">
+        <button type="button" class="modal-close" id="closeEditModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+        <div class="modal-icon" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); width: 56px; height: 56px; margin-bottom: 16px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 28px; height: 28px;">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </div>
+        <h2 style="font-size: 1.5rem;">Edit Poll</h2>
+        <p style="font-size: 0.9rem;">Modify your poll before anyone votes</p>
+      </div>
+      <form id="editPollForm">
+        <input type="hidden" id="editPollId">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" style="margin-bottom: 8px;">Poll Title</label>
+          <input type="text" class="form-input" id="editPollTitle" placeholder="e.g., Team Feedback Survey" required style="padding: 12px 16px;">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" style="margin-bottom: 8px;">Description (Optional)</label>
+          <textarea class="form-textarea" id="editPollDescription" placeholder="Brief description..." style="min-height: 60px; padding: 12px 16px;"></textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" style="margin-bottom: 8px;">Voting Options</label>
+          <div class="options-input" id="editOptionsContainer"></div>
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <input type="text" class="form-input" id="editNewOption" placeholder="Add option..." style="padding: 10px 14px;">
+            <button type="button" class="btn btn-secondary btn-sm" id="editAddOptionBtn">Add</button>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" style="margin-bottom: 8px;">Questions</label>
+          <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+            <input type="text" class="form-input" id="editNewQuestion" placeholder="Enter question..." style="padding: 10px 14px;">
+            <button type="button" class="btn btn-secondary btn-sm" id="editAddQuestionBtn">Add</button>
+          </div>
+          <div class="questions-list" id="editQuestionsList" style="max-height: 150px; overflow-y: auto;"></div>
+        </div>
+
+        <div id="editError" class="alert alert-error" style="display: none; margin-bottom: 12px; padding: 10px 14px; font-size: 0.9rem;">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="15" y1="9" x2="9" y2="15"/>
+            <line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+          <span id="editErrorText"></span>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 16px;">
+          <button type="button" class="btn btn-secondary btn-sm" id="cancelEditBtn" style="flex: 1; padding: 12px;">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm" style="flex: 1; padding: 12px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div class="page-wrapper" id="adminPanel" style="display: none;">
     <header>
       <div class="container">

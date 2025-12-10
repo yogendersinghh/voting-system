@@ -334,6 +334,52 @@ app.patch('/api/quiz/:id/toggle', (req, res) => {
   res.json({ success: true, is_active: newStatus });
 });
 
+// Update Quiz (only if no votes exist)
+app.put('/api/quiz/:id', (req, res) => {
+  const { id } = req.params;
+  const { title, description, options, questions } = req.body;
+  
+  // Check if quiz exists
+  const quiz = db.prepare('SELECT * FROM quizzes WHERE id = ?').get(id);
+  if (!quiz) {
+    return res.status(404).json({ error: 'Quiz not found' });
+  }
+  
+  // Check if there are any votes
+  const voteCount = db.prepare('SELECT COUNT(*) as count FROM votes WHERE quiz_id = ?').get(id);
+  if (voteCount.count > 0) {
+    return res.status(400).json({ error: 'Cannot edit poll with existing votes' });
+  }
+  
+  // Validate input
+  if (!title || !options || !questions || questions.length === 0) {
+    return res.status(400).json({ error: 'Title, options, and at least one question are required' });
+  }
+  
+  try {
+    // Update quiz
+    db.prepare('UPDATE quizzes SET title = ?, description = ?, options = ? WHERE id = ?')
+      .run(title, description || '', JSON.stringify(options), id);
+    
+    // Delete old questions and insert new ones
+    db.prepare('DELETE FROM questions WHERE quiz_id = ?').run(id);
+    
+    const insertQuestion = db.prepare('INSERT INTO questions (quiz_id, question_text, order_num) VALUES (?, ?, ?)');
+    questions.forEach((q, index) => {
+      insertQuestion.run(id, q, index);
+    });
+    
+    res.json({ 
+      success: true, 
+      message: 'Poll updated successfully',
+      quizId: id
+    });
+  } catch (error) {
+    console.error('Update error:', error);
+    res.status(500).json({ error: 'Failed to update poll' });
+  }
+});
+
 // Delete Quiz
 app.delete('/api/quiz/:id', (req, res) => {
   const { id } = req.params;

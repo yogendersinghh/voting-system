@@ -278,6 +278,7 @@
       position: relative;
       min-height: 380px;
       overflow: visible;
+      z-index: 100;
     }
     
     .question-slide {
@@ -322,16 +323,11 @@
       to { opacity: 0; transform: translateX(30px); }
     }
     
-    /* Navigation - FIXED z-index much lower than dropdown */
+    /* Navigation - lower z-index than dropdown */
     .vote-navigation {
       margin-top: 60px;
       padding-top: 32px;
       border-top: 1px solid var(--border-color);
-      position: relative;
-      z-index: 1;
-    }
-    
-    .vote-navigation .btn {
       position: relative;
       z-index: 1;
     }

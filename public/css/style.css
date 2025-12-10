@@ -1268,12 +1268,14 @@ nav a.active {
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(12px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  padding: 40px 20px;
 }
 
 .modal-overlay.active {
@@ -1291,7 +1293,7 @@ nav a.active {
   transform: scale(0.9) translateY(20px);
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .modal::before {
@@ -1311,6 +1313,7 @@ nav a.active {
 .modal-header {
   text-align: center;
   margin-bottom: 36px;
+  position: relative;
 }
 
 .modal-icon {
@@ -1337,6 +1340,33 @@ nav a.active {
 
 .modal-header p {
   color: var(--text-muted);
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.modal-close svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* ==================== URL Copy Box ==================== */

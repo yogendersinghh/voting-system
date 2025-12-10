@@ -3,6 +3,10 @@ let isLoggedIn = false;
 let options = [];
 let questions = [];
 
+// Edit state
+let editOptions = [];
+let editQuestions = [];
+
 // DOM Elements
 const loginModal = document.getElementById('loginModal');
 const adminPanel = document.getElementById('adminPanel');
@@ -369,6 +373,14 @@ async function loadPolls() {
               <td style="color: var(--text-muted);">${new Date(poll.created_at).toLocaleDateString()}</td>
               <td>
                 <div class="action-buttons">
+                  ${poll.total_voters === 0 ? `
+                    <button class="btn btn-secondary btn-sm btn-icon" onclick="editPoll('${poll.id}')" title="Edit Poll" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(167, 139, 250, 0.2)); border-color: rgba(124, 58, 237, 0.4);">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                  ` : ''}
                   <button class="btn btn-secondary btn-sm btn-icon" onclick="copyUrl('${baseUrl}/vote.html?id=${poll.id}')" title="Copy Vote URL">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
@@ -485,4 +497,199 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+// ==================== EDIT POLL FUNCTIONALITY ====================
+
+const editModal = document.getElementById('editModal');
+const editPollForm = document.getElementById('editPollForm');
+const closeEditModalBtn = document.getElementById('closeEditModal');
+const cancelEditBtn = document.getElementById('cancelEditBtn');
+const editAddOptionBtn = document.getElementById('editAddOptionBtn');
+const editNewOptionInput = document.getElementById('editNewOption');
+const editOptionsContainer = document.getElementById('editOptionsContainer');
+const editAddQuestionBtn = document.getElementById('editAddQuestionBtn');
+const editNewQuestionInput = document.getElementById('editNewQuestion');
+const editQuestionsList = document.getElementById('editQuestionsList');
+
+// Open edit modal and load poll data
+async function editPoll(id) {
+  try {
+    const response = await fetch(`/api/quiz/${id}`);
+    const poll = await response.json();
+    
+    if (!response.ok) {
+      alert(poll.error || 'Failed to load poll');
+      return;
+    }
+    
+    // Populate form
+    document.getElementById('editPollId').value = id;
+    document.getElementById('editPollTitle').value = poll.title;
+    document.getElementById('editPollDescription').value = poll.description || '';
+    
+    // Load options and questions
+    editOptions = [...poll.options];
+    editQuestions = poll.questions.map(q => q.question_text);
+    
+    renderEditOptions();
+    renderEditQuestions();
+    
+    // Show modal
+    editModal.classList.add('active');
+    document.getElementById('editError').style.display = 'none';
+  } catch (error) {
+    alert('Failed to load poll data');
+  }
+}
+
+// Close edit modal
+function closeEditModal() {
+  editModal.classList.remove('active');
+  editOptions = [];
+  editQuestions = [];
+}
+
+closeEditModalBtn.addEventListener('click', closeEditModal);
+cancelEditBtn.addEventListener('click', closeEditModal);
+
+// Close modal on overlay click
+editModal.addEventListener('click', (e) => {
+  if (e.target === editModal) {
+    closeEditModal();
+  }
+});
+
+// Edit Options Management
+editAddOptionBtn.addEventListener('click', addEditOptions);
+editNewOptionInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    addEditOptions();
+  }
+});
+
+function addEditOptions() {
+  const input = editNewOptionInput.value;
+  const newOptions = input
+    .split(',')
+    .map(opt => opt.trim())
+    .filter(opt => opt.length > 0)
+    .filter(opt => !editOptions.includes(opt));
+  
+  if (newOptions.length > 0) {
+    editOptions.push(...newOptions);
+    renderEditOptions();
+    editNewOptionInput.value = '';
+    editNewOptionInput.focus();
+  }
+}
+
+function removeEditOption(index) {
+  editOptions.splice(index, 1);
+  renderEditOptions();
+}
+
+function renderEditOptions() {
+  editOptionsContainer.innerHTML = editOptions.map((opt, index) => `
+    <div class="option-tag">
+      <span>${escapeHtml(opt)}</span>
+      <button type="button" class="option-remove" onclick="removeEditOption(${index})">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  `).join('');
+}
+
+// Edit Questions Management
+editAddQuestionBtn.addEventListener('click', addEditQuestions);
+editNewQuestionInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    addEditQuestions();
+  }
+});
+
+function addEditQuestions() {
+  const input = editNewQuestionInput.value.trim();
+  if (input.length > 0) {
+    editQuestions.push(input);
+    renderEditQuestions();
+    editNewQuestionInput.value = '';
+    editNewQuestionInput.focus();
+  }
+}
+
+function removeEditQuestion(index) {
+  editQuestions.splice(index, 1);
+  renderEditQuestions();
+}
+
+function renderEditQuestions() {
+  editQuestionsList.innerHTML = editQuestions.map((q, index) => `
+    <div class="question-item">
+      <div class="question-number">${index + 1}</div>
+      <div class="question-text">${escapeHtml(q)}</div>
+      <button type="button" class="question-remove" onclick="removeEditQuestion(${index})">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          <line x1="10" y1="11" x2="10" y2="17"/>
+          <line x1="14" y1="11" x2="14" y2="17"/>
+        </svg>
+      </button>
+    </div>
+  `).join('');
+}
+
+// Submit Edit Form
+editPollForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const id = document.getElementById('editPollId').value;
+  const title = document.getElementById('editPollTitle').value.trim();
+  const description = document.getElementById('editPollDescription').value.trim();
+  
+  if (editOptions.length < 2) {
+    showEditError('Please add at least 2 voting options');
+    return;
+  }
+  
+  if (editQuestions.length < 1) {
+    showEditError('Please add at least 1 question');
+    return;
+  }
+  
+  try {
+    const response = await fetch(`/api/quiz/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        title, 
+        description, 
+        options: editOptions, 
+        questions: editQuestions 
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      closeEditModal();
+      loadPolls();
+      showToast('Poll updated successfully!');
+    } else {
+      showEditError(data.error || 'Failed to update poll');
+    }
+  } catch (error) {
+    showEditError('Connection error. Please try again.');
+  }
+});
+
+function showEditError(message) {
+  document.getElementById('editErrorText').textContent = message;
+  document.getElementById('editError').style.display = 'flex';
 }
